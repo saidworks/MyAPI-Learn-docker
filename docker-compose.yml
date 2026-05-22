@@ -1,0 +1,133 @@
+services:
+  gateway:
+    build:
+      context: ./MyApiGateway
+      dockerfile: Dockerfile
+    image: myapi-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - myapi1
+      - myapi2
+      - myapi3
+
+  myapi1:
+    build:
+      context: ./MyAPI-Learn-K8S
+      dockerfile: Dockerfile
+    image: myapi-learn-k8s
+    environment:
+      Redis__ConnectionString: ${REDIS_CONNECTION}
+      ConnectionStrings__DefaultConnection: ${SQL_CONNECTION}
+    depends_on:
+      - redis
+      - sqlserver
+
+  myapi2:
+    image: myapi-learn-k8s
+    environment:
+      Redis__ConnectionString: ${REDIS_CONNECTION}
+      ConnectionStrings__DefaultConnection: ${SQL_CONNECTION}
+    depends_on:
+      - redis
+      - sqlserver
+
+  myapi3:
+    image: myapi-learn-k8s
+    environment:
+      Redis__ConnectionString: ${REDIS_CONNECTION}
+      ConnectionStrings__DefaultConnection: ${SQL_CONNECTION}
+    depends_on:
+      - redis
+      - sqlserver
+
+  redis:
+    image: redis:latest
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+
+volumes:
+  sqlserver-data:
+
+# services:
+#   gateway:
+#     build:
+#       context: ./MyApiGateway
+#       dockerfile: Dockerfile
+#     image: myapi-gateway
+#     ports:
+#       - "8080:8080"
+#     depends_on:
+#       - myapi
+
+#   myapi:
+#     build:
+#       context: ./MyAPI-Learn-K8S
+#       dockerfile: Dockerfile
+#     image: myapi-learn-k8s
+#     environment:
+#       Redis__ConnectionString: ${REDIS_CONNECTION}
+#       ConnectionStrings__DefaultConnection: ${SQL_CONNECTION}
+#     depends_on:
+#       - redis
+#       - sqlserver
+
+#   redis:
+#     image: redis:latest
+
+#   sqlserver:
+#     image: mcr.microsoft.com/mssql/server:2022-latest
+#     environment:
+#       ACCEPT_EULA: "Y"
+#       SA_PASSWORD: ${SA_PASSWORD}
+#     ports:
+#       - "1433:1433"
+#     volumes:
+#       - sqlserver-data:/var/opt/mssql
+
+# volumes:
+#   sqlserver-data:
+
+# services:
+#   myapi:
+#     build:
+#       context: ./MyAPI-Learn-K8S
+#       dockerfile: Dockerfile
+#     image: myapi-learn-k8s
+#     container_name: myapi-container
+#     ports:
+#       - "8080:8080"
+#     depends_on:
+#       - redis
+#       - sqlserver
+#     environment:
+#       Redis__ConnectionString: ${REDIS_CONNECTION}
+#       ConnectionStrings__DefaultConnection: ${SQL_CONNECTION}
+
+#   redis:
+#     image: redis:latest
+#     container_name: redis-container
+#     ports:
+#       - "6379:6379"
+
+#   sqlserver:
+#     image: mcr.microsoft.com/mssql/server:2022-latest
+#     container_name: sqlserver-container
+#     environment:
+#       ACCEPT_EULA: "Y"
+#       SA_PASSWORD: ${SA_PASSWORD}
+#     ports:
+#       - "1433:1433"
+#     volumes:
+#       - sqlserver-data:/var/opt/mssql
+
+# volumes:
+#   sqlserver-data:
