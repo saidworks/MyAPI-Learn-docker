@@ -1,15 +1,16 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using MyAPI_Learn_K8S;
 using MyAPI_Learn_K8S.Models;
 using StackExchange.Redis;
-
-using MyAPI_Learn_K8S;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -21,8 +22,7 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 
 builder.Services.AddDbContext<ProductDbContext>(options =>
 {
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
 var app = builder.Build();
@@ -39,45 +39,52 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapGet("/instance", () =>
-{
-    return Results.Ok(new
+app.MapGet(
+    "/instance",
+    () =>
     {
-        Instance = Environment.MachineName,
-        Time = DateTime.UtcNow
-    });
-});
+        return Results.Ok(new { Instance = Environment.MachineName, Time = DateTime.UtcNow });
+    }
+);
 
-app.MapGet("/redis-test", async (IConnectionMultiplexer redis) =>
+app.MapGet(
+    "/redis-test",
+    async (IConnectionMultiplexer redis) =>
+    {
+        try
+        {
+            var db = redis.GetDatabase();
+
+            await db.StringSetAsync("message", "Hello from Redis inside Docker Compose!");
+
+            var value = await db.StringGetAsync("message");
+
+            return Results.Ok(new { Message = value.ToString() });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                title: "Redis is unavailable",
+                detail: ex.Message,
+                statusCode: 503
+            );
+        }
+    }
+);
+
+// Initialize database asynchronously
+// Only run on the first instance (use a lock or check if DB exists)
+Task.Run(async () =>
 {
     try
     {
-        var db = redis.GetDatabase();
-
-        await db.StringSetAsync("message", "Hello from Redis inside Docker Compose!");
-
-        var value = await db.StringGetAsync("message");
-
-        return Results.Ok(new
-        {
-            Message = value.ToString()
-        });
+        await DBService.CreateDbAsync(app.Configuration);
+        Console.WriteLine("Database initialized successfully.");
     }
     catch (Exception ex)
     {
-        return Results.Problem(
-                   title: "Redis is unavailable",
-                   detail: ex.Message,
-                   statusCode: 503
-        );
+        Console.WriteLine($"Failed to initialize database: {ex.Message}");
     }
-
 });
 
-DBService.CreateDb(app.Configuration);
-
 app.Run();
-
-
-
-
