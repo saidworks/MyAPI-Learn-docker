@@ -1,6 +1,9 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using MyAPI_Learn_K8S.Models;
 using StackExchange.Redis;
+
+using MyAPI_Learn_K8S;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +74,10 @@ app.MapGet("/redis-test", async (IConnectionMultiplexer redis) =>
 
 });
 
-
+DBService.CreateDb(app.Configuration);
 
 app.Run();
+
+
+
+

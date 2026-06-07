@@ -10,6 +10,7 @@ namespace MyAPI_Learn_K8S.Controllers
     [Route("api/products")]
     public class ProductController(ProductDbContext _dbContext, IConnectionMultiplexer _redis) : ControllerBase
     {
+        
         [HttpGet]
         public async Task<ActionResult<List<Product>>> GetAll()
         {

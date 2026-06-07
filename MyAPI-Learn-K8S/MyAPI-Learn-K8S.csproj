@@ -4,6 +4,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     <RootNamespace>MyAPI_Learn_K8S</RootNamespace>
     <UserSecretsId>317568d0-4639-46c7-9102-f8731633e35c</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
